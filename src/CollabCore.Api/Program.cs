@@ -30,6 +30,13 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdmin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("RequirePM", policy => policy.RequireRole("PM"));
+    options.AddPolicy("RequireContributor", policy => policy.RequireRole("Contributor"));
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
