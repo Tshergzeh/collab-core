@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CollabCore.Core\CollabCore.Core.csproj" />
+    <ProjectReference Include="..\..\src\CollabCore.Contracts\CollabCore.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
