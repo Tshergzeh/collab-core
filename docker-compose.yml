@@ -1,0 +1,25 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA:Y
+      - SA_PASSWORD:Ar8U]5L})]2y
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "27017:27017"
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: admin
+      MONGODB_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb-data:/data/db
+
+volumes:
+  sqlserver-data:
+  redis-data:
+  mongodb-data:
