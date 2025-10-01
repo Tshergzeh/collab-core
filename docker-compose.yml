@@ -1,25 +1,55 @@
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: collabcore-sqlserver
     environment:
-      - ACCEPT_EULA:Y
-      - SA_PASSWORD:Ar8U]5L})]2y
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrongPassw0rd123"
+      MSSQL_PID: "Developer"
     ports:
       - "1433:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrongPassw0rd123 -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
 
   redis:
     image: redis:7-alpine
+    container_name: collabcore-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    container_name: collabcore-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
     ports:
       - "27017:27017"
-    environment:
-      MONGODB_INITDB_ROOT_USERNAME: admin
-      MONGODB_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongodb-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
 volumes:
   sqlserver-data:
+    driver: local
   redis-data:
+    driver: local
   mongodb-data:
+    driver: local

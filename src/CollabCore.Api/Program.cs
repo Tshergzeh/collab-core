@@ -1,6 +1,7 @@
 using System.Text;
 using CollabCore.Infrastructure.Data;
 using CollabCore.Infrastructure.Services;
+using CollabCore.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,7 +15,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
