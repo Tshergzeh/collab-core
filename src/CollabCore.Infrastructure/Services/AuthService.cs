@@ -67,14 +67,16 @@ namespace CollabCore.Infrastructure.Services
             return Convert.ToBase64String(randomBytes);
         }
 
-        public async Task<AuthResponse> Register(UserDto request)
+        public async Task<AuthResponse> Register(RegisterDto request)
         {
             if (await _context.Users.AnyAsync(u => u.Username == request.Username))
                 return new AuthResponse { Success = false, Message = "User already exists." };
+            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+                return new AuthResponse { Success = false, Message = "Email already exists." };
 
             CreatePasswordHash(request.Password, out byte[] hash, out byte[] salt);
 
-            var user = new CollabCore.Core.Entities.User
+            var user = new User
             {
                 Username = request.Username,
                 PasswordHash = hash,
@@ -89,7 +91,7 @@ namespace CollabCore.Infrastructure.Services
             return new AuthResponse { Success = true, Message = "User created successfully." };
         }
 
-        public async Task<AuthResponse> Login(UserDto request)
+        public async Task<AuthResponse> Login(LoginDto request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
             if (user == null || !VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))

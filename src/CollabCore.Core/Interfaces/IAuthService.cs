@@ -5,8 +5,8 @@ namespace CollabCore.Core.Interfaces
 {
     public interface IAuthService
     {
-        Task<AuthResponse> Register(UserDto request);
-        Task<AuthResponse> Login(UserDto request);
+        Task<AuthResponse> Register(RegisterDto request);
+        Task<AuthResponse> Login(LoginDto request);
         Task<AuthResponse> Refresh(RefreshTokenRequest request);
     }
 }
