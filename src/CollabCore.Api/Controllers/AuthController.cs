@@ -39,7 +39,6 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
-            Message = "This is a protected endpoint.",
             UserId = userId,
             Username = username,
             Role = role
