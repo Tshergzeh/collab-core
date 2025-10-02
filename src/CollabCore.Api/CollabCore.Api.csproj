@@ -20,6 +20,7 @@
     <ProjectReference Include="..\CollabCore.Core\CollabCore.Core.csproj" />
     <ProjectReference Include="..\CollabCore.Infrastructure\CollabCore.Infrastructure.csproj" />
     <ProjectReference Include="..\CollabCore.Contracts\CollabCore.Contracts.csproj" />
+    <ProjectReference Include="..\CollabCore.Application\CollabCore.Application.csproj" />
   </ItemGroup>
 
 </Project>

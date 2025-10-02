@@ -1,12 +1,11 @@
-using CollabCore.Contracts.Requests;
-using CollabCore.Contracts.Responses;
+using CollabCore.Core.Models;
 
 namespace CollabCore.Core.Interfaces
 {
     public interface IAuthService
     {
-        Task<AuthResponse> Register(RegisterDto request);
-        Task<AuthResponse> Login(LoginDto request);
-        Task<AuthResponse> Refresh(RefreshTokenRequest request);
+        Task<AuthResult> Register(UserRegistration registration);
+        Task<AuthResult> Login(UserLogin login);
+        Task<AuthResult> Refresh(string refreshToken);
     }
 }

@@ -1,13 +1,12 @@
+using CollabCore.Core.Entities;
+using CollabCore.Core.Models;
+using CollabCore.Core.Interfaces;
+using CollabCore.Infrastructure.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using CollabCore.Core.Entities;
-using CollabCore.Core.Interfaces;
-using CollabCore.Infrastructure.Data;
-using CollabCore.Contracts.Requests;
-using CollabCore.Contracts.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -67,18 +66,18 @@ namespace CollabCore.Infrastructure.Services
             return Convert.ToBase64String(randomBytes);
         }
 
-        public async Task<AuthResponse> Register(RegisterDto request)
+        public async Task<AuthResult> Register(UserRegistration registration)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == request.Username))
-                return new AuthResponse { Success = false, Message = "User already exists." };
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-                return new AuthResponse { Success = false, Message = "Email already exists." };
+            if (await _context.Users.AnyAsync(u => u.Username == registration.Username))
+                return new AuthResult { Success = false, Message = "User already exists." };
+            if (await _context.Users.AnyAsync(u => u.Email == registration.Email))
+                return new AuthResult { Success = false, Message = "Email already exists." };
 
-            CreatePasswordHash(request.Password, out byte[] hash, out byte[] salt);
+            CreatePasswordHash(registration.Password, out byte[] hash, out byte[] salt);
 
             var user = new User
             {
-                Username = request.Username,
+                Username = registration.Username,
                 PasswordHash = hash,
                 PasswordSalt = salt,
                 RefreshToken = GenerateRefreshToken(),
@@ -88,14 +87,18 @@ namespace CollabCore.Infrastructure.Services
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return new AuthResponse { Success = true, Message = "User created successfully." };
+            return new AuthResult { Success = true, Message = "User created successfully." };
         }
 
-        public async Task<AuthResponse> Login(LoginDto request)
+        public async Task<AuthResult> Login(UserLogin login)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-            if (user == null || !VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
-                return new AuthResponse { Success = false, Message = "Invalid credentials" };
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Username == login.Username);
+            if (user == null || !VerifyPassword(
+                login.Password,
+                user.PasswordHash,
+                user.PasswordSalt))
+                return new AuthResult { Success = false, Message = "Invalid credentials" };
 
             var jwtToken = CreateJwtToken(user);
             var refreshToken = GenerateRefreshToken();
@@ -105,7 +108,7 @@ namespace CollabCore.Infrastructure.Services
 
             await _context.SaveChangesAsync();
 
-            return new AuthResponse
+            return new AuthResult
             {
                 Success = true,
                 Token = jwtToken,
@@ -113,11 +116,12 @@ namespace CollabCore.Infrastructure.Services
             };
         }
 
-        public async Task<AuthResponse> Refresh(RefreshTokenRequest request)
+        public async Task<AuthResult> Refresh(string refreshToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.RefreshToken == refreshToken);
             if (user == null || user.RefreshTokenExpiryTime < DateTime.UtcNow)
-                return new AuthResponse { Success = false, Message = "Invalid refresh token." };
+                return new AuthResult { Success = false, Message = "Invalid refresh token." };
 
             var newJwt = CreateJwtToken(user);
             var newRefreshToken = GenerateRefreshToken();
@@ -126,7 +130,7 @@ namespace CollabCore.Infrastructure.Services
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _context.SaveChangesAsync();
 
-            return new AuthResponse
+            return new AuthResult
             {
                 Success = true,
                 Token = newJwt,
