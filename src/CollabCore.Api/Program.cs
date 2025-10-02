@@ -54,8 +54,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<AuthAppService>();
 builder.Services.AddScoped<ProjectAppService>();
+builder.Services.AddScoped<TaskAppService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
