@@ -22,10 +22,59 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TaskResponse>>> GetTasks(Guid projectId)
+        public async Task<ActionResult<IEnumerable<TaskResponse>>> GetTasks(
+            Guid projectId,
+            [FromQuery] QueryParameters query,
+            [FromQuery] string? status,
+            [FromQuery] string? priority)
         {
-            var tasks = await _context.Tasks
+            var tasks = _context.Tasks
                 .Where(t => t.ProjectId == projectId)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                tasks = tasks.Where(task =>
+                    task.Title.Contains(query.Search) ||
+                    (task.Description != null && task.Description.Contains(query.Search))
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                tasks = tasks.Where(task => task.Status == status);
+            }
+
+            if (!string.IsNullOrWhiteSpace(priority))
+            {
+                tasks = tasks.Where(task => task.Priority == priority);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.SortBy))
+            {
+                tasks = query.SortBy.ToLower() switch
+                {
+                    "title" => query.SortDesc
+                        ? tasks.OrderByDescending(task => task.Title)
+                        : tasks.OrderBy(task => task.Title),
+                    "duedate" => query.SortDesc
+                        ? tasks.OrderByDescending(task => task.DueDate)
+                        : tasks.OrderBy(task => task.DueDate),
+                    "createdat" => query.SortDesc
+                        ? tasks.OrderByDescending(task => task.CreatedAt)
+                        : tasks.OrderBy(task => task.CreatedAt),
+                    _ => tasks.OrderBy(task => task.CreatedAt)
+                };
+            }
+            else
+            {
+                tasks = tasks.OrderBy(task => task.CreatedBy);
+            }
+
+            var totalItems = await tasks.CountAsync();
+            var items = await tasks
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .Select(t => new TaskResponse
                 {
                     Id = t.Id,
@@ -39,7 +88,14 @@ namespace CollabCore.Api.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(tasks);
+
+            return Ok(new
+            {
+                TotalItems = totalItems,
+                Page = query.Page,
+                PageSize = query.PageSize,
+                Items = items
+            });
         }
 
         [HttpGet("{id}")]

@@ -22,9 +22,38 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjects()
+        public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjects([FromQuery] QueryParameters query)
         {
-            var projects = await _context.Projects
+            var projects = _context.Projects.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                projects = projects.Where(p => p.Name.Contains(query.Search)
+                    || (p.Description != null && p.Description.Contains(query.Search)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.SortBy))
+            {
+                projects = query.SortBy.ToLower() switch
+                {
+                    "name" => query.SortDesc
+                        ? projects.OrderByDescending(p => p.Name)
+                        : projects.OrderBy(p => p.Name),
+                    "createdat" => query.SortDesc
+                        ? projects.OrderByDescending(p => p.CreatedAt)
+                        : projects.OrderBy(p => p.CreatedAt),
+                    _ => projects.OrderBy(p => p.CreatedAt)
+                };
+            }
+            else
+            {
+                projects = projects.OrderBy(p => p.CreatedAt);
+            }
+
+            var totalItems = await projects.CountAsync();
+            var items = await projects
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .Select(p => new ProjectResponse
                 {
                     Id = p.Id,
@@ -35,7 +64,15 @@ namespace CollabCore.Api.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(projects);
+            var response = new
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
+
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
