@@ -6,6 +6,7 @@ using CollabCore.Infrastructure.Data;
 using CollabCore.Infrastructure.Services;
 using CollabCore.Application.Services;
 using CollabCore.Core.Interfaces;
+using CollabCore.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,7 +53,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<AuthAppService>();
+builder.Services.AddScoped<ProjectAppService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>

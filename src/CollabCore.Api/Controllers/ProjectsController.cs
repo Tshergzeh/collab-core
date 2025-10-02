@@ -6,6 +6,7 @@ using CollabCore.Infrastructure.Data;
 using CollabCore.Contracts.Requests;
 using CollabCore.Contracts.Responses;
 using CollabCore.Core.Entities;
+using CollabCore.Application.Services;
 
 namespace CollabCore.Api.Controllers
 {
@@ -14,60 +15,21 @@ namespace CollabCore.Api.Controllers
     [Authorize]
     public class ProjectsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ProjectAppService _projectAppService;
 
-        public ProjectsController(AppDbContext context)
+        public ProjectsController(ProjectAppService projectAppService)
         {
-            _context = context;
+            _projectAppService = projectAppService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjects([FromQuery] QueryParameters query)
+        public async Task<IActionResult> GetProjects([FromQuery] QueryParameters query)
         {
-            var projects = _context.Projects.AsQueryable();
+            var (items, total) = await _projectAppService.GetProjects(query);
 
-            if (!string.IsNullOrWhiteSpace(query.Search))
-            {
-                projects = projects.Where(p => p.Name.Contains(query.Search)
-                    || (p.Description != null && p.Description.Contains(query.Search)));
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.SortBy))
-            {
-                projects = query.SortBy.ToLower() switch
-                {
-                    "name" => query.SortDesc
-                        ? projects.OrderByDescending(p => p.Name)
-                        : projects.OrderBy(p => p.Name),
-                    "createdat" => query.SortDesc
-                        ? projects.OrderByDescending(p => p.CreatedAt)
-                        : projects.OrderBy(p => p.CreatedAt),
-                    _ => projects.OrderBy(p => p.CreatedAt)
-                };
-            }
-            else
-            {
-                projects = projects.OrderBy(p => p.CreatedAt);
-            }
-
-            var totalItems = await projects.CountAsync();
-            var items = await projects
-                .Skip((query.Page - 1) * query.PageSize)
-                .Take(query.PageSize)
-                .Select(p => new ProjectResponse
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    OwnerId = p.OwnerId,
-                    CreatedAt = p.CreatedAt
-                })
-                .ToListAsync();
-
-            var response = new
-            {
+            var response = new {
                 Items = items,
-                TotalItems = totalItems,
+                TotalItems = total,
                 Page = query.Page,
                 PageSize = query.PageSize
             };
@@ -76,82 +38,39 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProjectResponse>> GetProject(Guid id)
+        public async Task<IActionResult> GetProject(Guid id)
         {
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null) return NotFound();
-
-            return Ok(new ProjectResponse
-            {
-                Id = project.Id,
-                Name = project.Name,
-                Description = project.Description,
-                OwnerId = project.OwnerId,
-                CreatedAt = project.CreatedAt,
-                ModifiedAt = project.ModifiedAt
-            });
+            var project = await _projectAppService.GetProject(id);
+            return project == null ? NotFound() : Ok(project);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ProjectResponse>> CreateProject(ProjectCreateDto dto)
+        public async Task<IActionResult> CreateProject(ProjectCreateDto dto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized("User ID not found in token.");
-
             var userId = Guid.Parse(userIdClaim.Value);
 
-            var project = new Project
-            {
-                Name = dto.Name,
-                Description = dto.Description,
-                OwnerId = userId
-            };
-
-            _context.Projects.Add(project);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetProject), new { id = project.Id }, new ProjectResponse
-            {
-                Id = project.Id,
-                Name = project.Name,
-                Description = project.Description,
-                OwnerId = project.OwnerId,
-                CreatedAt = project.CreatedAt,
-                ModifiedAt = project.ModifiedAt
-            });
+            var project = await _projectAppService.CreateProject(dto, userId);
+            
+            return CreatedAtAction(nameof(GetProject), 
+                new { id = project.Id},
+                project);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProject(Guid id, ProjectUpdateDto dto)
         {
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null) return NotFound();
-
-            project.Name = dto.Name;
-            project.Description = dto.Description;
-            project.ModifiedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-            return Ok(new ProjectResponse
-            {
-                Id = project.Id,
-                Name = project.Name,
-                Description = project.Description,
-                OwnerId = project.OwnerId,
-                CreatedAt = project.CreatedAt,
-                ModifiedAt = project.ModifiedAt
-            });
+            var updated = await _projectAppService.UpdateProject(id, dto);
+            if (updated == null) return NotFound();
+            return Ok(updated);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProject(Guid id)
         {
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null) return NotFound();
-
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
-
+            var deleted = await _projectAppService.DeleteProject(id);
+            if (!deleted) return NotFound();
             return NoContent();
         }
     }
