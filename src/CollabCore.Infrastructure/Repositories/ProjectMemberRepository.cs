@@ -14,7 +14,10 @@ namespace CollabCore.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task AddProjectMemberAsync(Guid projectId, Guid userId)
+        public async Task AddProjectMemberAsync(
+            Guid projectId,
+            Guid userId,
+            string role = "Contributor")
         {
             if (!await _context.ProjectMembers
                 .AnyAsync(projectMember => projectMember.ProjectId == projectId &&
@@ -24,7 +27,8 @@ namespace CollabCore.Infrastructure.Repositories
                 _context.ProjectMembers.Add(new ProjectMember
                 {
                     ProjectId = projectId,
-                    UserId = userId
+                    UserId = userId,
+                    Role = role
                 });
                 await _context.SaveChangesAsync();
             }
@@ -60,7 +64,7 @@ namespace CollabCore.Infrastructure.Repositories
                     Id = projectMember.User.Id,
                     Username = projectMember.User.Username,
                     Name = projectMember.User.Name,
-                    Role = projectMember.User.Role
+                    Role = projectMember.Role
                 })
                 .ToListAsync();
     }

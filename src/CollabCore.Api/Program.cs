@@ -52,15 +52,19 @@ builder.Services.AddHealthChecks();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
 builder.Services.AddScoped<IUsersRepository, UserRepository>();
 builder.Services.AddScoped<IAssignmentsRepository, AssignmentRepository>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<AuthAppService>();
 builder.Services.AddScoped<ProjectAppService>();
 builder.Services.AddScoped<TaskAppService>();
+builder.Services.AddScoped<ProjectMemberAppService>();
 builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<UsersAppService>();
 builder.Services.AddScoped<AssignmentsAppService>();

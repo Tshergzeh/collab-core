@@ -19,5 +19,12 @@ namespace CollabCore.Infrastructure.Repositories
             _context.Assignments.Add(assignment);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> ExistsAsync(Guid taskId, Guid userId)
+        {
+            return await _context.Assignments.AnyAsync(assignment =>
+                assignment.TaskId == taskId &&
+                assignment.UserId == userId);
+        }
     }
 }

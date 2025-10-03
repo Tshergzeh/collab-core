@@ -94,5 +94,13 @@ namespace CollabCore.Infrastructure.Repositories
                 project.Id == projectId &&
                 project.OwnerId == userId);
         }
+
+        public async Task<Project?> GetByIdWithMembersAsync(Guid id)
+        {
+            return await _context.Projects
+                .Include(project => project.ProjectMembers)
+                .ThenInclude(projectMember => projectMember.User)
+                .FirstOrDefaultAsync(project => project.Id == id);
+        }
     }
 }

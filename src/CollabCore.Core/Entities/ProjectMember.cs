@@ -7,5 +7,7 @@ namespace CollabCore.Core.Entities
 
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;
+
+        public string Role { get; set; } = "Contributor"; // Contributor or PM
     }
 }

@@ -12,5 +12,6 @@ namespace CollabCore.Core.Interfaces
         Task UpdateAsync(Project project);
         Task DeleteAsync(Project project);
         Task<bool> IsProjectOwnerAsync(Guid projectId, Guid userId);
+        Task<Project?> GetByIdWithMembersAsync(Guid id);
     }
 }

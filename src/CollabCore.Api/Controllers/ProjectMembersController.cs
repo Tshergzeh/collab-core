@@ -21,7 +21,10 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPost("{userId}")]
-        public async Task<IActionResult> AddProjectMember(Guid projectId, Guid userId)
+        public async Task<IActionResult> AddProjectMember(
+            Guid projectId,
+            Guid userId,
+            string role = "Contributor")
         {
             var ownerIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (ownerIdClaim == null) return Unauthorized("User ID not found in token.");
@@ -30,7 +33,7 @@ namespace CollabCore.Api.Controllers
             if (!await _authorizationService.IsProjectOwnerAsync(projectId, ownerId))
                 return Forbid();
 
-            await _projectMemberAppService.AddProjectMemberAsync(projectId, userId);
+            await _projectMemberAppService.AddProjectMemberAsync(projectId, userId, role);
 
             return CreatedAtAction(
                 nameof(GetProjectMembers),
