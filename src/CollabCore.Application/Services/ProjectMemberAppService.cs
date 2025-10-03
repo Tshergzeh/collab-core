@@ -1,4 +1,4 @@
-using CollabCore.Core.Entities;
+using CollabCore.Contracts.Responses;
 using CollabCore.Core.Interfaces;
 
 namespace CollabCore.Application.Services
@@ -16,7 +16,7 @@ namespace CollabCore.Application.Services
             _projectMemberRepository.AddProjectMemberAsync(projectId, userId);
         public Task RemoveProjectMemberAsync(Guid projectId, Guid userId) =>
             _projectMemberRepository.RemoveProjectMemberAsync(projectId, userId);
-        public Task<IEnumerable<User>> GetProjectMembersAsync(Guid projectId) =>
+        public Task<IEnumerable<ProjectMemberResponse>> GetProjectMembersAsync(Guid projectId) =>
             _projectMemberRepository.GetProjectMembersAsync(projectId);
     }
 }

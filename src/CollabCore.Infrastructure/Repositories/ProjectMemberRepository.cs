@@ -52,10 +52,16 @@ namespace CollabCore.Infrastructure.Repositories
                     .AnyAsync(project => project.Id == projectId && project.OwnerId == userId);
         }
 
-        public async Task<IEnumerable<User>> GetProjectMembersAsync(Guid projectId) =>
+        public async Task<IEnumerable<ProjectMemberResponse>> GetProjectMembersAsync(Guid projectId) =>
             await _context.ProjectMembers
                 .Where(projectMember => projectMember.ProjectId == projectId)
-                .Select(projectMember => projectMember.User)
+                .Select(projectMember => new ProjectMemberResponse
+                {
+                    Id = projectMember.User.Id,
+                    Username = projectMember.User.Username,
+                    Name = projectMember.User.Name,
+                    Role = projectMember.User.Role
+                })
                 .ToListAsync();
     }
 }
