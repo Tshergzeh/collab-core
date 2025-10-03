@@ -60,6 +60,7 @@ builder.Services.AddScoped<AuthAppService>();
 builder.Services.AddScoped<ProjectAppService>();
 builder.Services.AddScoped<TaskAppService>();
 builder.Services.AddScoped<AuthorizationService>();
+builder.Services.AddScoped<ProjectMemberAppService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>

@@ -51,7 +51,7 @@ namespace CollabCore.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Project?> GetByIdAsync(Guid id) 
+        public async Task<Project?> GetByIdAsync(Guid id)
         {
             return await _context.Projects.FindAsync(id);
         }
@@ -86,6 +86,13 @@ namespace CollabCore.Infrastructure.Repositories
         {
             _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsProjectOwnerAsync(Guid projectId, Guid userId)
+        {
+            return await _context.Projects.AnyAsync(project =>
+                project.Id == projectId &&
+                project.OwnerId == userId);
         }
     }
 }
