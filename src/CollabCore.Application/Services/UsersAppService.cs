@@ -26,5 +26,10 @@ namespace CollabCore.Application.Services
                 ModifiedAt = project.ModifiedAt
             });
         }
+
+        public async Task<IEnumerable<AssignmentResponse>> GetAssignments(Guid id)
+        {
+            return await _usersRepository.GetAssignmentsAsync(id);
+        }
     }
 }
