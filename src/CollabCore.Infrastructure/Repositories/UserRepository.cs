@@ -34,5 +34,18 @@ namespace CollabCore.Infrastructure.Repositories
                 })
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<ProjectMembershipResponse>> GetProjectMembershipsAsync(Guid id)
+        {
+            return await _context.ProjectMembers
+                .Where(projectMember => projectMember.UserId == id)
+                .Include(projectMember => projectMember.Project)
+                .Select(projectMember => new ProjectMembershipResponse
+                {
+                    ProjectId = projectMember.ProjectId,
+                    ProjectName = projectMember.Project.Name
+                })
+                .ToListAsync();
+        }
     }
 }

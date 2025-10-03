@@ -7,5 +7,6 @@ namespace CollabCore.Core.Interfaces
     {
         Task<IEnumerable<Project>> GetOwnedProjectsAsync(Guid id);
         Task<IEnumerable<AssignmentResponse>> GetAssignmentsAsync(Guid id);
+        Task<IEnumerable<ProjectMembershipResponse>> GetProjectMembershipsAsync(Guid id);
     }
 }

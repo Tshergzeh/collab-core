@@ -32,5 +32,12 @@ namespace CollabCore.Api.Controllers
             var assignments = await _usersAppService.GetAssignments(id);
             return Ok(assignments);
         }
+
+        [HttpGet("{id}/project-memberships")]
+        public async Task<IActionResult> GetProjectMemberships(Guid id)
+        {
+            var projectMemberships = await _usersAppService.GetProjectMemberships(id);
+            return Ok(projectMemberships);
+        }
     }
 }

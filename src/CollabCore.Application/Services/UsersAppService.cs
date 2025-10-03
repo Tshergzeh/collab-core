@@ -31,5 +31,10 @@ namespace CollabCore.Application.Services
         {
             return await _usersRepository.GetAssignmentsAsync(id);
         }
+
+        public async Task<IEnumerable<ProjectMembershipResponse>> GetProjectMemberships(Guid id)
+        {
+            return await _usersRepository.GetProjectMembershipsAsync(id);
+        }
     }
 }
