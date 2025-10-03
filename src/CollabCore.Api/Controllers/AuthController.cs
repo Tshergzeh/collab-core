@@ -46,21 +46,5 @@ namespace CollabCore.Api.Controllers
             if (!response.Success) return Unauthorized(response);
             return Ok(response);
         }
-
-        [HttpGet("me")]
-        [Authorize]
-        public IActionResult GetMe()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var username = User.FindFirstValue(ClaimTypes.Name);
-            var role = User.FindFirstValue(ClaimTypes.Role);
-
-            return Ok(new
-            {
-                UserId = userId,
-                Username = username,
-                Role = role
-            });
-        }
     }
 }
