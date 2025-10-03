@@ -16,10 +16,12 @@ namespace CollabCore.Api.Controllers
     public class TasksController : ControllerBase
     {
         public readonly TaskAppService _taskAppService;
+        private readonly AuthorizationService _authorizationService;
 
-        public TasksController(TaskAppService taskAppService)
+        public TasksController(TaskAppService taskAppService, AuthorizationService authorizationService)
         {
             _taskAppService = taskAppService;
+            _authorizationService = authorizationService;
         }
 
         [HttpGet]
@@ -59,6 +61,9 @@ namespace CollabCore.Api.Controllers
             if (userIdClaim == null) return Unauthorized("User ID not found in token.");
             var userId = Guid.Parse(userIdClaim.Value);
 
+            if (!await _authorizationService.IsProjectMemberAsync(projectId, userId))
+                return Forbid();
+
             var task = await _taskAppService.CreateTask(dto, projectId, userId);
             
             return CreatedAtAction(
@@ -70,6 +75,13 @@ namespace CollabCore.Api.Controllers
         [HttpPut("{taskId}")]
         public async Task<IActionResult> UpdateTask(Guid projectId, Guid taskId, TaskUpdateDto dto)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized("User ID not found in token.");
+            var userId = Guid.Parse(userIdClaim.Value);
+
+            if (!await _authorizationService.IsProjectMemberAsync(projectId, userId))
+                return Forbid();
+
             var updated = await _taskAppService.UpdateTask(projectId, taskId, dto);
             if (updated == null) return NotFound();
             return Ok(updated);
@@ -78,6 +90,13 @@ namespace CollabCore.Api.Controllers
         [HttpDelete("{taskId}")]
         public async Task<IActionResult> DeleteTask(Guid projectId, Guid taskId)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized("User ID not found in token.");
+            var userId = Guid.Parse(userIdClaim.Value);
+
+            if (!await _authorizationService.IsProjectMemberAsync(projectId, userId))
+                return Forbid();
+                
             var deleted = await _taskAppService.DeleteTask(projectId, taskId);
             if (!deleted) return NotFound();
             return NoContent();
