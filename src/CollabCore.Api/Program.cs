@@ -57,12 +57,13 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
 builder.Services.AddScoped<IUsersRepository, UserRepository>();
-builder.Services.AddScoped<IUsersRepository, UserRepository>();
+builder.Services.AddScoped<IAssignmentsRepository, AssignmentRepository>();
 builder.Services.AddScoped<AuthAppService>();
 builder.Services.AddScoped<ProjectAppService>();
 builder.Services.AddScoped<TaskAppService>();
 builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<UsersAppService>();
+builder.Services.AddScoped<AssignmentsAppService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
