@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 using CollabCore.Infrastructure.Data;
 using CollabCore.Contracts.Requests;
@@ -28,6 +29,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(
+            Summary = "List all projects"
+        )]
         public async Task<IActionResult> GetProjects([FromQuery] QueryParameters query)
         {
             var (items, total) = await _projectAppService.GetProjects(query);
@@ -43,6 +47,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [SwaggerOperation(
+            Summary = "Get project by ID"
+        )]
         public async Task<IActionResult> GetProject(Guid id)
         {
             var project = await _projectAppService.GetProject(id);
@@ -50,6 +57,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Create project"
+        )]
         public async Task<IActionResult> CreateProject(ProjectCreateDto dto)
         {
             var userId = _currentUser.GetCurrentUserId();
@@ -62,6 +72,10 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [SwaggerOperation(
+            Summary = "Update project details",
+            Description = "Allows project owners to update project details"
+        )]
         public async Task<IActionResult> UpdateProject(Guid id, ProjectUpdateDto dto)
         {
             var updated = await _projectAppService.UpdateProject(id, dto);
@@ -70,6 +84,10 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [SwaggerOperation(
+            Summary = "Delete project",
+            Description = "Allows project owners to delete projects"
+        )]
         public async Task<IActionResult> DeleteProject(Guid id)
         {
             var deleted = await _projectAppService.DeleteProject(id);

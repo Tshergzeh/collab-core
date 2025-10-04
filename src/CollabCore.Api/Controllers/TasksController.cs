@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 using CollabCore.Infrastructure.Data;
 using CollabCore.Contracts.Requests;
@@ -31,6 +32,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(
+            Summary = "List all tasks scoped to a project"
+        )]
         public async Task<IActionResult> GetTasks(
             Guid projectId,
             [FromQuery] QueryParameters query,
@@ -54,6 +58,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpGet("{taskId}")]
+        [SwaggerOperation(
+            Summary = "Get task by ID"
+        )]
         public async Task<IActionResult> GetTask(Guid projectId, Guid taskId)
         {
             var task = await _taskAppService.GetTask(projectId, taskId);
@@ -61,6 +68,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Create task"
+        )]
         public async Task<IActionResult> CreateTask(Guid projectId, TaskCreateDto dto)
         {
             var userId = _currentUser.GetCurrentUserId();
@@ -77,6 +87,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPut("{taskId}")]
+        [SwaggerOperation(
+            Summary = "Update task details"
+        )]
         public async Task<IActionResult> UpdateTask(Guid projectId, Guid taskId, TaskUpdateDto dto)
         {
             var userId = _currentUser.GetCurrentUserId();
@@ -90,6 +103,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpDelete("{taskId}")]
+        [SwaggerOperation(
+            Summary = "Delete task"
+        )]
         public async Task<IActionResult> DeleteTask(Guid projectId, Guid taskId)
         {
             var userId = _currentUser.GetCurrentUserId();

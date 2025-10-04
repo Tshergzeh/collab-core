@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Annotations;
 using CollabCore.Infrastructure.Data;
 using CollabCore.Infrastructure.Services;
 using CollabCore.Application.Services;
@@ -20,6 +21,8 @@ builder.Services.AddSwaggerGen(c =>
         Title = "CollabCore API",
         Version = "v1"
     });
+
+    c.EnableAnnotations();
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {

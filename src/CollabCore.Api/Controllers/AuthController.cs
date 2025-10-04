@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 using CollabCore.Contracts.Requests;
 using CollabCore.Contracts.Responses;
@@ -20,6 +21,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPost("register")]
+        [SwaggerOperation(
+            Summary = "Register"
+        )]
         public async Task<ActionResult<AuthResponse>> Register(
             [FromBody] RegisterDto request)
         {
@@ -30,6 +34,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPost("login")]
+        [SwaggerOperation(
+            Summary = "Login"
+        )]
         public async Task<ActionResult<AuthResponse>> Login(
             [FromBody] LoginDto request)
         {
@@ -39,6 +46,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPost("refresh")]
+        [SwaggerOperation(
+            Summary = "Refresh token"
+        )]
         public async Task<ActionResult<AuthResponse>> Refresh(
             [FromBody] RefreshTokenRequest request)
         {

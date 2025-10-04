@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 using CollabCore.Application.Services;
 using CollabCore.Contracts.Requests;
@@ -27,6 +28,10 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPost("{userId}")]
+        [SwaggerOperation(
+            Summary = "Add project member",
+            Description = "Allows project owners to users to projects. Role can be Contributor, PM, or Owner."
+        )]
         public async Task<IActionResult> AddProjectMember(
             Guid projectId,
             Guid userId,
@@ -47,6 +52,10 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpPut("{userId}/role")]
+        [SwaggerOperation(
+            Summary = "Modify project member role",
+            Description = "Allows project owners and PMs to modify roles assigned to project members"
+        )]
         public async Task<IActionResult> UpdateMemberRole(
             Guid projectId,
             Guid userId,
@@ -67,6 +76,10 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpDelete("{userId}")]
+        [SwaggerOperation(
+            Summary = "Remove users from projects",
+            Description = "Allows project owners and PMs to remove users from projects"
+        )]
         public async Task<IActionResult> RemoveProjectMember(Guid projectId, Guid userId)
         {
             var ownerId = _currentUser.GetCurrentUserId();
@@ -79,6 +92,9 @@ namespace CollabCore.Api.Controllers
         }
 
         [HttpGet]
+        [SwaggerOperation(
+            Summary = "List all users assigned to a project"
+        )]
         public async Task<IActionResult> GetProjectMembers(Guid projectId)
         {
             var members = await _projectMemberAppService.GetProjectMembersAsync(projectId);
