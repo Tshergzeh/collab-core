@@ -56,6 +56,15 @@ namespace CollabCore.Infrastructure.Repositories
                     .AnyAsync(project => project.Id == projectId && project.OwnerId == userId);
         }
 
+        public async Task<bool> IsProjectManagerAsync(Guid projectId, Guid userId)
+        {
+            var member = await _context.ProjectMembers.FirstOrDefaultAsync(projectMember =>
+                projectMember.ProjectId == projectId &&
+                projectMember.UserId == userId);
+
+            return member != null && member.Role == "PM";
+        }
+
         public async Task<IEnumerable<ProjectMemberResponse>> GetProjectMembersAsync(Guid projectId) =>
             await _context.ProjectMembers
                 .Where(projectMember => projectMember.ProjectId == projectId)
@@ -67,5 +76,20 @@ namespace CollabCore.Infrastructure.Repositories
                     Role = projectMember.Role
                 })
                 .ToListAsync();
+
+        public async Task UpdateMemberRoleAsync(
+            Guid projectId,
+            Guid userId,
+            string role)
+        {
+            var membership = await _context.ProjectMembers.FirstOrDefaultAsync(projectMember =>
+                projectMember.ProjectId == projectId &&
+                projectMember.UserId == userId)
+                    ?? throw new KeyNotFoundException("User is not a member of this project");
+
+            membership.Role = role;
+            _context.ProjectMembers.Update(membership);
+            await _context.SaveChangesAsync();
+        }
     }
 }

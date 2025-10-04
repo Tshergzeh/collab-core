@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using CollabCore.Application.Services;
+using CollabCore.Contracts.Requests;
 
 namespace CollabCore.Api.Controllers
 {
@@ -40,6 +41,26 @@ namespace CollabCore.Api.Controllers
                 new { projectId },
                 new { projectId, userId }
             );
+        }
+
+        [HttpPut("{userId}/role")]
+        public async Task<IActionResult> UpdateMemberRole(
+            Guid projectId,
+            Guid userId,
+            [FromBody] UpdateProjectMemberRoleRequest request)
+        {
+            if (userId != request.UserId) return BadRequest("UserId mismatch");
+
+            try
+            {
+                var result = await _projectMemberAppService.UpdateMemberRoleAsync(projectId, request);
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+
         }
 
         [HttpDelete("{userId}")]

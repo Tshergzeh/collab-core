@@ -7,6 +7,11 @@ namespace CollabCore.Core.Interfaces
         Task AddProjectMemberAsync(Guid projectId, Guid userId, string role);
         Task RemoveProjectMemberAsync(Guid projectId, Guid userId);
         Task<bool> IsProjectMemberAsync(Guid projectId, Guid userId);
+        Task<bool> IsProjectManagerAsync(Guid projectId, Guid userId);
         Task<IEnumerable<ProjectMemberResponse>> GetProjectMembersAsync(Guid projectId);
+        Task UpdateMemberRoleAsync(
+            Guid projectId,
+            Guid userId,
+            string role);
     }
 }
