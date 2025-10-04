@@ -9,10 +9,20 @@ namespace CollabCore.Application.Services
     public class TaskAppService
     {
         private readonly ITaskRepository _taskRepository;
+        private readonly IProjectRepository _projectRepository;
+        private readonly IProjectMemberRepository _projectMemberRepository;
+        private readonly ICurrentUserService _currentUser;
 
-        public TaskAppService(ITaskRepository taskRepository)
+        public TaskAppService(
+            ITaskRepository taskRepository,
+            IProjectRepository projectRepository,
+            IProjectMemberRepository projectMemberRepository,
+            ICurrentUserService currentUser)
         {
             _taskRepository = taskRepository;
+            _projectRepository = projectRepository;
+            _projectMemberRepository = projectMemberRepository;
+            _currentUser = currentUser;
         }
 
         public async Task<(IEnumerable<TaskResponse> Items, int TotalItems)> GetTasks(
@@ -72,6 +82,16 @@ namespace CollabCore.Application.Services
             Guid projectId, 
             Guid userId)
         {
+            var currentUserId = _currentUser.GetCurrentUserId();
+
+            var isOwner = await _projectRepository.IsProjectOwnerAsync(projectId, currentUserId);
+            var IsProjectManager = await _projectMemberRepository.IsProjectManagerAsync(
+                projectId,
+                currentUserId);
+
+            if (!isOwner && !IsProjectManager) throw new UnauthorizedAccessException(
+                "Only project owners and project managers can create tasks");
+
             var task = new TaskItem
             {
                 Title = dto.Title,
@@ -103,6 +123,16 @@ namespace CollabCore.Application.Services
             Guid taskId, 
             TaskUpdateDto dto)
         {
+            var currentUserId = _currentUser.GetCurrentUserId();
+
+            var isOwner = await _projectRepository.IsProjectOwnerAsync(projectId, currentUserId);
+            var IsProjectManager = await _projectMemberRepository.IsProjectManagerAsync(
+                projectId,
+                currentUserId);
+
+            if (!isOwner && !IsProjectManager) throw new UnauthorizedAccessException(
+                "Only project owners and project managers can update tasks");
+
             var task = await _taskRepository.GetByIdAsync(projectId, taskId);
             if (task == null) return null;
 
@@ -130,6 +160,16 @@ namespace CollabCore.Application.Services
 
         public async Task<bool> DeleteTask(Guid projectId, Guid taskId)
         {
+            var currentUserId = _currentUser.GetCurrentUserId();
+
+            var isOwner = await _projectRepository.IsProjectOwnerAsync(projectId, currentUserId);
+            var IsProjectManager = await _projectMemberRepository.IsProjectManagerAsync(
+                projectId,
+                currentUserId);
+
+            if (!isOwner && !IsProjectManager) throw new UnauthorizedAccessException(
+                "Only project owners and project managers can delete tasks");
+
             var task = await _taskRepository.GetByIdAsync(projectId, taskId);
             if (task == null) return false;
 
