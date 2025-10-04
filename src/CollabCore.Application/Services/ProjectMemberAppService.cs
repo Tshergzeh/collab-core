@@ -19,10 +19,34 @@ namespace CollabCore.Application.Services
             _currentUser = currentUser;
         }
 
-        public Task AddProjectMemberAsync(Guid projectId, Guid userId, string role) =>
-            _projectMemberRepository.AddProjectMemberAsync(projectId, userId, role);
-        public Task RemoveProjectMemberAsync(Guid projectId, Guid userId) =>
-            _projectMemberRepository.RemoveProjectMemberAsync(projectId, userId);
+        public async Task AddProjectMemberAsync(Guid projectId, Guid userId, string role)
+        {
+            var currentUserId = _currentUser.GetCurrentUserId();
+
+            var isOwner = await _projectRepository.IsProjectOwnerAsync(projectId, currentUserId);
+            var IsProjectManager = await _projectMemberRepository.IsProjectManagerAsync(
+                projectId,
+                currentUserId);
+
+            if (!isOwner && !IsProjectManager) throw new UnauthorizedAccessException(
+                "Only project owners and project managers can add members to projects");
+
+            await _projectMemberRepository.AddProjectMemberAsync(projectId, userId, role);
+        }
+        public async Task RemoveProjectMemberAsync(Guid projectId, Guid userId)
+        {
+            var currentUserId = _currentUser.GetCurrentUserId();
+
+            var isOwner = await _projectRepository.IsProjectOwnerAsync(projectId, currentUserId);
+            var IsProjectManager = await _projectMemberRepository.IsProjectManagerAsync(
+                projectId,
+                currentUserId);
+
+            if (!isOwner && !IsProjectManager) throw new UnauthorizedAccessException(
+                "Only project owners and project managers can update members' roles");
+
+            await _projectMemberRepository.RemoveProjectMemberAsync(projectId, userId);
+        }
         public Task<IEnumerable<ProjectMemberResponse>> GetProjectMembersAsync(Guid projectId) =>
             _projectMemberRepository.GetProjectMembersAsync(projectId);
         public async Task<ProjectMemberResponse> UpdateMemberRoleAsync(
