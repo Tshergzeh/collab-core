@@ -1,6 +1,7 @@
 using CollabCore.Core.Interfaces;
 using CollabCore.Infrastructure.Data;
 using CollabCore.Core.Entities;
+using CollabCore.Core.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace CollabCore.Infrastructure.Repositories
@@ -19,6 +20,8 @@ namespace CollabCore.Infrastructure.Repositories
             Guid userId,
             string role = "Contributor")
         {
+            if (!ProjectRoles.IsValid(role)) throw new ArgumentException(
+                $"Invalid role '{role}'. Valid roles are: {string.Join(", ", ProjectRoles.All)}");
             if (!await _context.ProjectMembers
                 .AnyAsync(projectMember => projectMember.ProjectId == projectId &&
                     projectMember.UserId == userId)
@@ -33,7 +36,6 @@ namespace CollabCore.Infrastructure.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-
 
         public async Task RemoveProjectMemberAsync(Guid projectId, Guid userId)
         {
@@ -82,6 +84,9 @@ namespace CollabCore.Infrastructure.Repositories
             Guid userId,
             string role)
         {
+            if (!ProjectRoles.IsValid(role)) throw new ArgumentException(
+                $"Invalid role '{role}'. Valid roles are: {string.Join(", ", ProjectRoles.All)}");
+                
             var membership = await _context.ProjectMembers.FirstOrDefaultAsync(projectMember =>
                 projectMember.ProjectId == projectId &&
                 projectMember.UserId == userId)
