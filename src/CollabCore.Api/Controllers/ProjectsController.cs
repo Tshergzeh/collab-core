@@ -7,6 +7,7 @@ using CollabCore.Contracts.Requests;
 using CollabCore.Contracts.Responses;
 using CollabCore.Core.Entities;
 using CollabCore.Application.Services;
+using CollabCore.Infrastructure.Services;
 
 namespace CollabCore.Api.Controllers
 {
@@ -16,10 +17,14 @@ namespace CollabCore.Api.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly ProjectAppService _projectAppService;
+        private readonly CurrentUserService _currentUser;
 
-        public ProjectsController(ProjectAppService projectAppService)
+        public ProjectsController(
+            ProjectAppService projectAppService,
+            CurrentUserService currentUser)
         {
             _projectAppService = projectAppService;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -47,9 +52,7 @@ namespace CollabCore.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProject(ProjectCreateDto dto)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return Unauthorized("User ID not found in token.");
-            var userId = Guid.Parse(userIdClaim.Value);
+            var userId = _currentUser.GetCurrentUserId();
 
             var project = await _projectAppService.CreateProject(dto, userId);
             

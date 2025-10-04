@@ -7,6 +7,7 @@ using CollabCore.Contracts.Requests;
 using CollabCore.Contracts.Responses;
 using CollabCore.Core.Entities;
 using CollabCore.Application.Services;
+using CollabCore.Infrastructure.Services;
 
 namespace CollabCore.Api.Controllers
 {
@@ -15,13 +16,18 @@ namespace CollabCore.Api.Controllers
     [Authorize]
     public class TasksController : ControllerBase
     {
-        public readonly TaskAppService _taskAppService;
+        private readonly TaskAppService _taskAppService;
         private readonly AuthorizationService _authorizationService;
+        private readonly CurrentUserService _currentUser;
 
-        public TasksController(TaskAppService taskAppService, AuthorizationService authorizationService)
+        public TasksController(
+            TaskAppService taskAppService,
+            AuthorizationService authorizationService,
+            CurrentUserService currentUser)
         {
             _taskAppService = taskAppService;
             _authorizationService = authorizationService;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -57,9 +63,7 @@ namespace CollabCore.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTask(Guid projectId, TaskCreateDto dto)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return Unauthorized("User ID not found in token.");
-            var userId = Guid.Parse(userIdClaim.Value);
+            var userId = _currentUser.GetCurrentUserId();
 
             if (!await _authorizationService.IsProjectMemberAsync(projectId, userId))
                 return Forbid();
@@ -75,9 +79,7 @@ namespace CollabCore.Api.Controllers
         [HttpPut("{taskId}")]
         public async Task<IActionResult> UpdateTask(Guid projectId, Guid taskId, TaskUpdateDto dto)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return Unauthorized("User ID not found in token.");
-            var userId = Guid.Parse(userIdClaim.Value);
+            var userId = _currentUser.GetCurrentUserId();
 
             if (!await _authorizationService.IsProjectMemberAsync(projectId, userId))
                 return Forbid();
@@ -90,9 +92,7 @@ namespace CollabCore.Api.Controllers
         [HttpDelete("{taskId}")]
         public async Task<IActionResult> DeleteTask(Guid projectId, Guid taskId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return Unauthorized("User ID not found in token.");
-            var userId = Guid.Parse(userIdClaim.Value);
+            var userId = _currentUser.GetCurrentUserId();
 
             if (!await _authorizationService.IsProjectMemberAsync(projectId, userId))
                 return Forbid();

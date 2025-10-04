@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using CollabCore.Application.Services;
 using CollabCore.Contracts.Requests;
+using CollabCore.Infrastructure.Services;
 
 namespace CollabCore.Api.Controllers
 {
@@ -13,12 +14,16 @@ namespace CollabCore.Api.Controllers
     {
         private readonly ProjectMemberAppService _projectMemberAppService;
         private readonly AuthorizationService _authorizationService;
+        private readonly CurrentUserService _currentUser;
 
-        public ProjectMembersController(ProjectMemberAppService projectMemberAppService,
-            AuthorizationService authorizationService)
+        public ProjectMembersController(
+            ProjectMemberAppService projectMemberAppService,
+            AuthorizationService authorizationService,
+            CurrentUserService currentUser)
         {
             _projectMemberAppService = projectMemberAppService;
             _authorizationService = authorizationService;
+            _currentUser = currentUser;
         }
 
         [HttpPost("{userId}")]
@@ -27,9 +32,7 @@ namespace CollabCore.Api.Controllers
             Guid userId,
             string role = "Contributor")
         {
-            var ownerIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (ownerIdClaim == null) return Unauthorized("User ID not found in token.");
-            var ownerId = Guid.Parse(ownerIdClaim.Value);
+            var ownerId = _currentUser.GetCurrentUserId();
 
             if (!await _authorizationService.IsProjectOwnerAsync(projectId, ownerId))
                 return Forbid();
@@ -66,9 +69,7 @@ namespace CollabCore.Api.Controllers
         [HttpDelete("{userId}")]
         public async Task<IActionResult> RemoveProjectMember(Guid projectId, Guid userId)
         {
-            var ownerIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (ownerIdClaim == null) return Unauthorized("User ID not found in token.");
-            var ownerId = Guid.Parse(ownerIdClaim.Value);
+            var ownerId = _currentUser.GetCurrentUserId();
 
             if (!await _authorizationService.IsProjectOwnerAsync(projectId, ownerId))
                 return Forbid();
