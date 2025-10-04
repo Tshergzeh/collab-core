@@ -9,10 +9,14 @@ namespace CollabCore.Application.Services
     public class ProjectAppService
     {
         private readonly IProjectRepository _projectRepository;
+        private readonly ICurrentUserService _currentUser;
 
-        public ProjectAppService(IProjectRepository projectRepository)
+        public ProjectAppService(
+            IProjectRepository projectRepository,
+            ICurrentUserService currentUser)
         {
             _projectRepository = projectRepository;
+            _currentUser = currentUser;
         }
 
         public async Task<(IEnumerable<ProjectResponse> Items, int TotalItems)> 
@@ -81,6 +85,13 @@ namespace CollabCore.Application.Services
 
         public async Task<ProjectResponse?> UpdateProject(Guid id, ProjectUpdateDto dto)
         {
+            var currentUserId = _currentUser.GetCurrentUserId();
+
+            var isOwner = await _projectRepository.IsProjectOwnerAsync(id, currentUserId);
+
+            if (!isOwner) throw new UnauthorizedAccessException(
+                "Only project owners can update projects");
+
             var project = await _projectRepository.GetByIdAsync(id);
             if (project == null) return null;
 
@@ -103,6 +114,13 @@ namespace CollabCore.Application.Services
 
         public async Task<bool> DeleteProject(Guid id)
         {
+            var currentUserId = _currentUser.GetCurrentUserId();
+
+            var isOwner = await _projectRepository.IsProjectOwnerAsync(id, currentUserId);
+
+            if (!isOwner) throw new UnauthorizedAccessException(
+                "Only project owners can update projects");
+                
             var project = await _projectRepository.GetByIdAsync(id);
             if (project == null) return false;
 
